@@ -1,0 +1,121 @@
+Node: 2  INPAD_SOURCE Block #1 (i_10_)
+T_arr: 0  T_req: -1.11022e-16  Tdel: 4.78e-10
+
+Node: 3  INPAD_OPIN Block #1 (i_10_)
+Pin: 0 
+T_arr: 4.78e-10  T_req: 4.78e-10  Tdel: 4.94426e-08
+Net to next node: #1 (i_10_).  Pins on net: 203.
+
+Node: 1060  CLB_IPIN Block #147 (n_n773)
+Pin: 0 
+T_arr: 4.99206e-08  T_req: 4.99206e-08  Tdel: 0
+
+Node: 1064  SUBBLK_IPIN Block #147 (n_n773)
+Pin: 0 Subblock #0 
+T_arr: 4.99206e-08  T_req: 4.99206e-08  Tdel: 5.45999e-10
+
+Node: 1067  SUBBLK_OPIN Block #147 (n_n773)
+Pin: 4 Subblock #0 
+T_arr: 5.04666e-08  T_req: 5.04666e-08  Tdel: 0
+
+Node: 1063  CLB_OPIN Block #147 (n_n773)
+Pin: 4 
+T_arr: 5.04666e-08  T_req: 5.04666e-08  Tdel: 3.28929e-08
+Net to next node: #266 (n_n773).  Pins on net: 7.
+
+Node: 6605  CLB_IPIN Block #757 ([1194])
+Pin: 3 
+T_arr: 8.33594e-08  T_req: 8.33594e-08  Tdel: 0
+
+Node: 6610  SUBBLK_IPIN Block #757 ([1194])
+Pin: 3 Subblock #0 
+T_arr: 8.33594e-08  T_req: 8.33594e-08  Tdel: 5.46002e-10
+
+Node: 6611  SUBBLK_OPIN Block #757 ([1194])
+Pin: 4 Subblock #0 
+T_arr: 8.39054e-08  T_req: 8.39054e-08  Tdel: 0
+
+Node: 6606  CLB_OPIN Block #757 ([1194])
+Pin: 4 
+T_arr: 8.39054e-08  T_req: 8.39054e-08  Tdel: 2.68576e-09
+Net to next node: #1040 ([1194]).  Pins on net: 2.
+
+Node: 11556  CLB_IPIN Block #1292 ([6941])
+Pin: 2 
+T_arr: 8.65912e-08  T_req: 8.65912e-08  Tdel: 0
+
+Node: 11561  SUBBLK_IPIN Block #1292 ([6941])
+Pin: 2 Subblock #0 
+T_arr: 8.65912e-08  T_req: 8.65912e-08  Tdel: 5.46002e-10
+
+Node: 11563  SUBBLK_OPIN Block #1292 ([6941])
+Pin: 4 Subblock #0 
+T_arr: 8.71372e-08  T_req: 8.71372e-08  Tdel: 0
+
+Node: 11558  CLB_OPIN Block #1292 ([6941])
+Pin: 4 
+T_arr: 8.71372e-08  T_req: 8.71372e-08  Tdel: 5.04878e-09
+Net to next node: #122 ([6941]).  Pins on net: 2.
+
+Node: 342  CLB_IPIN Block #57 (n_n1108)
+Pin: 2 
+T_arr: 9.2186e-08  T_req: 9.2186e-08  Tdel: 0
+
+Node: 347  SUBBLK_IPIN Block #57 (n_n1108)
+Pin: 2 Subblock #0 
+T_arr: 9.2186e-08  T_req: 9.2186e-08  Tdel: 5.46002e-10
+
+Node: 349  SUBBLK_OPIN Block #57 (n_n1108)
+Pin: 4 Subblock #0 
+T_arr: 9.2732e-08  T_req: 9.2732e-08  Tdel: 0
+
+Node: 344  CLB_OPIN Block #57 (n_n1108)
+Pin: 4 
+T_arr: 9.2732e-08  T_req: 9.2732e-08  Tdel: 2.69425e-09
+Net to next node: #124 (n_n1108).  Pins on net: 2.
+
+Node: 11610  CLB_IPIN Block #1298 ([6949])
+Pin: 0 
+T_arr: 9.54262e-08  T_req: 9.54262e-08  Tdel: 0
+
+Node: 11615  SUBBLK_IPIN Block #1298 ([6949])
+Pin: 0 Subblock #0 
+T_arr: 9.54262e-08  T_req: 9.54262e-08  Tdel: 5.46002e-10
+
+Node: 11619  SUBBLK_OPIN Block #1298 ([6949])
+Pin: 4 Subblock #0 
+T_arr: 9.59722e-08  T_req: 9.59722e-08  Tdel: 0
+
+Node: 11614  CLB_OPIN Block #1298 ([6949])
+Pin: 4 
+T_arr: 9.59722e-08  T_req: 9.59722e-08  Tdel: 4.45166e-09
+Net to next node: #39 ([6949]).  Pins on net: 2.
+
+Node: 84  CLB_IPIN Block #26 (o_5_)
+Pin: 2 
+T_arr: 1.00424e-07  T_req: 1.00424e-07  Tdel: 0
+
+Node: 89  SUBBLK_IPIN Block #26 (o_5_)
+Pin: 2 Subblock #0 
+T_arr: 1.00424e-07  T_req: 1.00424e-07  Tdel: 5.46002e-10
+
+Node: 91  SUBBLK_OPIN Block #26 (o_5_)
+Pin: 4 Subblock #0 
+T_arr: 1.0097e-07  T_req: 1.0097e-07  Tdel: 0
+
+Node: 86  CLB_OPIN Block #26 (o_5_)
+Pin: 4 
+T_arr: 1.0097e-07  T_req: 1.0097e-07  Tdel: 3.87152e-09
+Net to next node: #18 (o_5_).  Pins on net: 2.
+
+Node: 36  OUTPAD_IPIN Block #18 (out:o_5_)
+Pin: 0 
+T_arr: 1.04841e-07  T_req: 1.04841e-07  Tdel: 2.95003e-10
+
+Node: 37  OUTPAD_SINK Block #18 (out:o_5_)
+T_arr: 1.05136e-07  T_req: 1.05136e-07  
+
+
+Tnodes on crit. path: 28  Non-global nets on crit. path: 7.
+Global nets on crit. path: 0.
+Total logic delay: 4.04901e-09 (s)  Total net delay: 1.01087e-07 (s)
