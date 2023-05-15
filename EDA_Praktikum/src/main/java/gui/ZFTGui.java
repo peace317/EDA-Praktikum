@@ -103,6 +103,7 @@ public class ZFTGui implements BlockEvent, RouteEvent {
         // generate place button
         generatePlaceB.setBounds(TOOL_POS, space, BUTTON_WIDTH, BUTTON_HEIGHT);
         generatePlaceB.addActionListener(e -> {
+            hideStates();
             switch (selectedAlgorithm) {
                 case 0 ->
                         executor.executeZFT(netlistFileMap.get(selectedNetlist),
@@ -124,6 +125,7 @@ public class ZFTGui implements BlockEvent, RouteEvent {
         // generate route button
         generateRouteB.setBounds(TOOL_POS, space, BUTTON_WIDTH, BUTTON_HEIGHT);
         generateRouteB.addActionListener(e -> {
+            showLoading();
             executor.executeVPRRouting(netlistFileMap.get(selectedNetlist),
                     architectureFileMap.get(selectedArchitecture));
         });
@@ -132,7 +134,10 @@ public class ZFTGui implements BlockEvent, RouteEvent {
 
         // stop generate button
         stopGeneratingB.setBounds(TOOL_POS, space, BUTTON_WIDTH, BUTTON_HEIGHT);
-        stopGeneratingB.addActionListener(e -> executor.stopExecution());
+        stopGeneratingB.addActionListener(e -> {
+            executor.stopExecution();
+            onStopLoading();
+        });
         stopGeneratingB.setEnabled(false);
         space += SPACE_BUFFER;
         toolP.add(stopGeneratingB);
@@ -285,7 +290,6 @@ public class ZFTGui implements BlockEvent, RouteEvent {
     @Override
     public void blockUI() {
         setButtonsEnabled(false);
-        showLoading();
     }
 
     @Override
@@ -324,16 +328,43 @@ public class ZFTGui implements BlockEvent, RouteEvent {
         checkState(routingConsistencyCheckP, successful);
     }
 
+    private void onStopLoading() {
+        if (!getState(placementConsistencyCheckP)) {
+            checkState(placementConsistencyCheckP, false);
+        }
+        if (!getState(netDelayValueCrossCheckP)) {
+            checkState(netDelayValueCrossCheckP, false);
+        }
+        if (!getState(routingConsistencyCheckP)) {
+            checkState(routingConsistencyCheckP, false);
+        }
+    }
+
     private void checkState(JPanel comp, boolean successful) {
         Component[] c = comp.getComponents();
         comp.remove(c[1]);
         if (successful) {
-            comp.add(new JLabel(checkIcon, JLabel.RIGHT), BorderLayout.EAST);
+            JLabel label = new JLabel(checkIcon, JLabel.RIGHT);
+            label.setName("check");
+            comp.add(label, BorderLayout.EAST);
         } else {
-            comp.add(new JLabel(noCheckIcon, JLabel.RIGHT), BorderLayout.EAST);
+            JLabel label = new JLabel(noCheckIcon, JLabel.RIGHT);
+            label.setName("noCheck");
+            comp.add(label, BorderLayout.EAST);
         }
         comp.repaint();
         comp.revalidate();
+    }
+
+    private void hideStates() {
+        placementConsistencyCheckP.setVisible(false);
+        netDelayValueCrossCheckP.setVisible(false);
+        routingConsistencyCheckP.setVisible(false);
+    }
+
+    private boolean getState(JPanel comp) {
+        Component[] c = comp.getComponents();
+        return c[1].getName() != null && c[1].getName().equals("check");
     }
 
     private void showLoading(JPanel comp) {

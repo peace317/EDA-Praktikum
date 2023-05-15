@@ -24,4 +24,14 @@ public class Net {
     public List<CircuitElement> getConnectedPads() {
         return connectedPads;
     }
+
+    public double getCosts() {
+        double sum = 0;
+        for (int i = 0; i < connectedPads.size() - 1; i++) {
+            for (int j = i + 1; j < connectedPads.size(); j++) {
+                sum += connectedPads.get(i).getPosition().rectilinear(connectedPads.get(j).getPosition());
+            }
+        }
+        return sum;
+    }
 }

@@ -4,6 +4,7 @@ import types.Architecture;
 import types.CircuitElement;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -15,9 +16,13 @@ public class ArchitectureParser {
     private Architecture arch;
 
     public Architecture parse(String fileName) {
+        return parse(new File(fileName));
+    }
+
+    public Architecture parse(File file) {
         currentLine = 1;
         arch = new Architecture();
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line = "";
             while ((line = br.readLine()) != null) {
                 readBlock(line);
@@ -35,6 +40,7 @@ public class ArchitectureParser {
         switch (parts[0]) {
             case "subblocks_per_clb" -> arch.setSubblocksPerClb(readNumber(parts[1]));
             case "subblock_lut_size" -> arch.setSubblockLutSize(readNumber(parts[1]));
+            case "io_rat" -> arch.setIoRate(readNumber(parts[1]));
             default -> {
                 // do nothing, read comment or unimportant config
             }

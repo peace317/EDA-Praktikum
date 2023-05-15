@@ -2,7 +2,7 @@ package gui;
 
 public class VPRListener {
 
-    private RouteEvent event;
+    private final RouteEvent event;
 
     public VPRListener(RouteEvent event) {
         this.event = event;

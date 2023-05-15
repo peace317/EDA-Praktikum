@@ -1,4 +1,4 @@
-Input netlist file: C:\Users\janik\OneDrive\Desktop\technische_Informatik\Semester_6\EDA\Praktikum\EDA_Praktikum\.\assets\arch\4lut_sanitized.arch
+Input netlist file: C:\Users\janik\OneDrive\Desktop\technische_Informatik\Semester_6\EDA\EDA-Praktikum\EDA_Praktikum\.\assets\arch\4lut_sanitized.arch
 
 io_rat: 2.
 chan_width_io: 1  pins_per_clb (pins per clb): 6

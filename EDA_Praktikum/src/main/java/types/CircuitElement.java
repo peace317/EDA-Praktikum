@@ -1,7 +1,5 @@
 package types;
 
-import types.Net;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,8 +12,9 @@ public class CircuitElement {
     private final String subBlockName;
     private final List<String> subblock;
 
-    private final List<Position> rescentPositions;
+    private final List<Position> recentPositions;
     private Position position;
+    private Integer subblockNumber;
     private int weight;
 
     public CircuitElement(ElementType type, String blockname, Integer blockNumber, List<Net> pinList) {
@@ -30,9 +29,10 @@ public class CircuitElement {
         this.pinList = pinList;
         this.subBlockName = subBlockName;
         this.subblock = subblock;
-        this.rescentPositions = new ArrayList<>();
+        this.recentPositions = new ArrayList<>();
         this.position = null;
         this.weight = 1;
+        this.subblockNumber = 0;
         for (Net net : pinList) {
             net.addPad(this);
         }
@@ -75,8 +75,12 @@ public class CircuitElement {
     }
 
     public void setPosition(Position pos) {
-        rescentPositions.add(pos);
+        recentPositions.add(pos);
         position = pos;
+    }
+
+    public Position getPosition() {
+        return position;
     }
 
     public String getSubBlockName() {
@@ -88,6 +92,22 @@ public class CircuitElement {
     }
 
     public boolean knownPosition(Position pos) {
-        return rescentPositions.contains(pos);
+        return recentPositions.contains(pos);
+    }
+
+    public Integer getSubblockNumber() {
+        return subblockNumber;
+    }
+
+    public void setSubblockNumber(Integer subblockNumber) {
+        this.subblockNumber = subblockNumber;
+    }
+
+    public double getCosts() {
+        double sum = 0;
+        for (Net net : pinList) {
+            sum += net.getCosts();
+        }
+        return sum;
     }
 }

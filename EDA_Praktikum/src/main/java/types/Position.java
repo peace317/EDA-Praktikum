@@ -12,12 +12,6 @@ public class Position {
     private final int x;
     private final int y;
 
-    /**
-     * Setter-Methode für x und y
-     *
-     * @param x erste Wegpunkt Koordinate
-     * @param y zweite Wegpunkt Koordinate
-     */
     public Position(int x, int y) {
         this.x = x;
         this.y = y;
@@ -53,13 +47,9 @@ public class Position {
         return Math.sqrt(Math.pow((other.x - this.x), 2) + Math.pow((other.y - this.y), 2));
     }
 
-    public Position normalize(Position other) {
+    public int rectilinear(Position other) {
         assert (other != null);
-        double dist = distance(other);
-        if (dist != 0) {
-            return new Position((int) (x / dist), (int) (y / dist));
-        }
-        return this;
+        return Math.abs(x - other.getX()) + Math.abs(y - other.getY());
     }
 
 

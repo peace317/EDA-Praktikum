@@ -1,6 +1,7 @@
 package gui;
 
 import algorithm.ZFTAlgorithm;
+import parser.ArchitectureParser;
 import parser.NetlistParser;
 import types.CircuitElement;
 import writer.PlacementWriter;
@@ -28,33 +29,42 @@ public class AlgorithmExecutor {
 
     public void executeZFT(File netlist, File architecture, int iterations) {
         Runnable runnableTask = () -> {
-            blockEvent.blockUI();
-            NetlistParser parser = new NetlistParser();
-            List<CircuitElement> nets = parser.parse(netlist);
-            ZFTAlgorithm algorithm = new ZFTAlgorithm(nets, iterations);
-            algorithm.run();
-            PlacementWriter writer = new PlacementWriter();
-            writer.write(OUT + getSimpleName(netlist, ".place"), netlist, architecture, algorithm.getPlacements());
-            System.out.println("fertig");
-            blockEvent.freeUI();
+            try {
+                blockEvent.blockUI();
+                NetlistParser parser = new NetlistParser();
+                List<CircuitElement> nets = parser.parse(netlist);
+                ArchitectureParser archParser = new ArchitectureParser();
+
+                ZFTAlgorithm algorithm = new ZFTAlgorithm(nets, archParser.parse(architecture), iterations);
+                algorithm.run();
+                System.out.println("fertig");
+                PlacementWriter writer = new PlacementWriter();
+                writer.write(OUT + getSimpleName(netlist, ".place"), netlist, architecture,
+                        algorithm.getPlacementsAsList(), algorithm.getXDimensionRespectively(),
+                        algorithm.getYDimensionRespectively());
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                blockEvent.freeUI();
+            }
         };
         currentTask = executorService.submit(runnableTask);
     }
 
     public void executeBoundingBox(File netlist, File architecture) {
-        executeVPRAlgorithm(netlist, architecture, "-place_only","bounding_box");
+        executeVPRAlgorithm(netlist, architecture, "-place_only", "bounding_box");
     }
 
     public void executeNetTiming(File netlist, File architecture) {
-        executeVPRAlgorithm(netlist, architecture, "-place_only","net_timing_driven");
+        executeVPRAlgorithm(netlist, architecture, "-place_only", "net_timing_driven");
     }
 
     public void executePathTiming(File netlist, File architecture) {
-        executeVPRAlgorithm(netlist, architecture, "-place_only","path_timing_driven");
+        executeVPRAlgorithm(netlist, architecture, "-place_only", "path_timing_driven");
     }
 
     public void executeVPRRouting(File netlist, File architecture) {
-        executeVPRAlgorithm(netlist, architecture, "-route_only","path_timing_driven");
+        executeVPRAlgorithm(netlist, architecture, "-route_only", "path_timing_driven");
     }
 
     private void executeVPRAlgorithm(File netlist, File architecture, String method, String algorithm) {
@@ -62,8 +72,8 @@ public class AlgorithmExecutor {
             blockEvent.blockUI();
             try {
                 String[] cmd = {VPR, netlist.getAbsolutePath(), architecture.getAbsolutePath(),
-                        OUT + getSimpleName(netlist, ".place"), OUT + getSimpleName(netlist, ".route"), method, "-place_algorithm",
-                        algorithm};
+                        OUT + getSimpleName(netlist, ".place"), OUT + getSimpleName(netlist, ".route"), method,
+                        "-place_algorithm", algorithm};
                 currentProcess = Runtime.getRuntime().exec(cmd);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(currentProcess.getInputStream()));
                 String line = reader.readLine();
