@@ -11,8 +11,9 @@ public class ZFTAlgorithm {
     private CircuitElement[][][] placements;
     private final Integer iterations;
     private final Architecture architecture;
-    private List<CircuitElement> ioElements = new ArrayList<>();
-    private List<CircuitElement> logicElements = new ArrayList<>();
+
+    private final List<CircuitElement> ioElements = new ArrayList<>();
+    private final List<CircuitElement> logicElements = new ArrayList<>();
 
     public ZFTAlgorithm(List<CircuitElement> netlist, Architecture architecture, Integer iterations) {
         this.iterations = iterations;
@@ -66,7 +67,6 @@ public class ZFTAlgorithm {
         for (CircuitElement elem : netlist) {
             int rand = Math.toIntExact(Math.round(Math.random() * (freePositions.size() - 1)));
             Position randPos = freePositions.get(rand);
-            elem.setPosition(randPos);
             setPosition(elem, randPos);
             freePositions.remove(rand);
         }
@@ -74,15 +74,25 @@ public class ZFTAlgorithm {
 
     private void setPosition(CircuitElement elem, Position pos) {
         if (elem.getType() == ElementType.CLB) {
-            if (elem.getX() == 0 || elem.getX() == placements.length - 1 || elem.getY() == 0 || elem.getY() == placements.length - 1)
+            if (pos.getX() == 0 || pos.getX() == placements.length - 1 || pos.getY() == 0 || pos.getY() == placements.length - 1)
                 throw new IllegalStateException("Logic block can not be positioned in pad location");
+            elem.setPosition(pos);
             placements[pos.getX()][pos.getY()][0] = elem;
         } else {
             int i = 0;
             while (placements[pos.getX()][pos.getY()][i] != null && i < placements[pos.getX()][pos.getY()].length) i++;
             if (i >= placements[pos.getX()][pos.getY()].length) throw new IllegalStateException("No free Positions");
+            elem.setPosition(pos);
             placements[pos.getX()][pos.getY()][i] = elem;
         }
+    }
+
+    public List<CircuitElement> getIoElements() {
+        return ioElements;
+    }
+
+    public List<CircuitElement> getLogicElements() {
+        return logicElements;
     }
 
     public List<CircuitElement> getPlacementsAsList() {
@@ -142,10 +152,7 @@ public class ZFTAlgorithm {
                     double targetCost = placements[idealPos.getX()][idealPos.getY()][0].getCosts();
                     double currentCost = component.getCosts();
                     if (currentCost > targetCost) {
-                        Position currentPos = component.getPosition();
-                        switchedPos = switchLogicBlockPosition(component, idealPos);
-                        if (switchedPos)
-                            switchLogicBlockPosition(placements[idealPos.getX()][idealPos.getY()][0], currentPos);
+                        switchedPos = switchLogicBlocks(component, placements[idealPos.getX()][idealPos.getY()][0]);
                     }
                 }
                 if (switchedPos) {
@@ -179,13 +186,23 @@ public class ZFTAlgorithm {
         return null;
     }
 
+    private boolean switchLogicBlocks(CircuitElement component, CircuitElement targetComponent) {
+        if (component.getType() != ElementType.CLB || targetComponent.getType() != ElementType.CLB)
+            throw new IllegalStateException("Only logic blocks can switch position!");
+        if (component.knownPosition(targetComponent.getPosition())) return false;
+        System.out.println(component.getBlockName() + " has switched position at " + targetComponent.getPosition());
+        Position targetPos = targetComponent.getPosition();
+        setPosition(targetComponent, component.getPosition());
+        setPosition(component, targetPos);
+        return true;
+    }
+
     private boolean switchLogicBlockPosition(CircuitElement component, Position newPos) {
         if (component.getType() != ElementType.CLB)
             throw new IllegalStateException("Only logic blocks can switch position!");
         if (component.knownPosition(newPos)) return false;
         System.out.println(component.getBlockName() + " has switched position at " + newPos);
         placements[component.getX()][component.getY()][0] = null;
-        component.setPosition(newPos);
         setPosition(component, newPos);
         return true;
     }
@@ -196,9 +213,11 @@ public class ZFTAlgorithm {
         int forceY = 0;
         for (Net net : component.getPinList()) {
             for (CircuitElement pad : net.getConnectedPads()) {
-                forceX += pad.getWeight() * pad.getX();
-                forceY += pad.getWeight() * pad.getY();
-                weight += pad.getWeight();
+                if (!pad.equals(component)) {
+                    forceX += pad.getWeight() * pad.getX();
+                    forceY += pad.getWeight() * pad.getY();
+                    weight += pad.getWeight();
+                }
             }
         }
 

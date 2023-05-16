@@ -1,0 +1,49 @@
+.input i_9_
+pinlist: i_9_
+
+.input i_10_
+pinlist: i_10_
+
+.input i_7_
+pinlist: i_7_
+
+.input i_8_
+pinlist: i_8_
+
+.output out:o_1_
+pinlist: o_1_
+
+.output out:o_2_
+pinlist: o_2_
+
+.clb o_1_  # Only LUT used.
+pinlist: [283] [327] [343] [348] o_1_ open
+subblock: o_1_ 0 1 2 3 4 open
+
+.clb o_2_  # Only LUT used.
+pinlist: [386] o_0_ [343] [348] o_2_ open
+subblock: o_2_ 0 1 2 3 4 open
+
+.clb o_0_  # Only LUT used.
+pinlist: open [343] [283] open o_0_ open
+subblock: o_0_ 0 1 2 open 4 open
+
+.clb [283]  # Only LUT used.
+pinlist: i_9_ i_10_ [343] open [283] open
+subblock: [283] 0 1 open open 4 open
+
+.clb [327]  # Only LUT used.
+pinlist: i_7_ i_8_ i_9_ i_10_ [327] open
+subblock: [327] 0 1 2 3 4 open
+
+.clb [343]  # Only LUT used.
+pinlist: i_9_ i_5_ i_0_ open [343] open
+subblock: [343] 0 1 2 open 4 open
+
+.clb [348]  # Only LUT used.
+pinlist: i_10_ i_7_ i_9_ open [348] open
+subblock: [348] 0 1 2 open 4 open
+
+.clb [386]  # Only LUT used.
+pinlist: i_9_ i_7_ i_8_ open [386] open
+subblock: [386] 0 1 2 open 4 open

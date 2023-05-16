@@ -49,7 +49,7 @@ public class ZFTGui implements BlockEvent, RouteEvent {
 
     // Iteration slider
     private int iterations = 200;
-    JSlider iterationsS = new JSlider(1, 1000, iterations);
+    JSlider iterationsS = new JSlider(0, 500, iterations);
 
     // Console-Output
     private final JTextArea output = new JTextArea();
@@ -189,7 +189,7 @@ public class ZFTGui implements BlockEvent, RouteEvent {
         toolP.add(iterationAmountL);
         space += 25;
         toolP.add(iterationsL);
-        iterationsS.setMajorTickSpacing(5);
+        iterationsS.setMajorTickSpacing(1);
         iterationsS.setBounds(TOOL_POS, space, BUTTON_WIDTH, BUTTON_HEIGHT);
         iterationsS.addChangeListener(e -> {
             iterations = iterationsS.getValue();
