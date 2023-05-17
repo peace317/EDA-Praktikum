@@ -6,5 +6,4 @@ public interface RouteEvent {
     public void netDelayValueCrossCheck(boolean successful);
     public void routingConsistencyCheck(boolean successful);
 
-    public void reset();
 }

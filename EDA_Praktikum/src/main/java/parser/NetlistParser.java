@@ -61,6 +61,9 @@ public class NetlistParser {
             case ".input" -> readInput(blockParts);
             case ".output" -> readOutput(blockParts);
             case ".clb" -> readCLB(blockParts);
+            case ".global" -> {
+                // do nothing
+            }
             default ->
                     throw new IllegalStateException("Unknown element type '" + blockParts.get(0)[0] + "'. (line: " + currentLine + ")");
         }

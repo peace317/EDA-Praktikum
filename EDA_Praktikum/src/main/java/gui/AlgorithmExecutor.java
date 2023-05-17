@@ -20,14 +20,16 @@ public class AlgorithmExecutor {
     private Future<?> currentTask;
     private Process currentProcess;
     private final BlockEvent blockEvent;
+    private final PlacementEvent placementEvent;
     private final ExecutorService executorService = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>());
 
-    public AlgorithmExecutor(BlockEvent blockEvent) {
+    public AlgorithmExecutor(BlockEvent blockEvent, PlacementEvent placementEvent) {
         this.blockEvent = blockEvent;
+        this.placementEvent = placementEvent;
     }
 
-    public void executeZFT(File netlist, File architecture, int iterations) {
+    public void executeZFT(File netlist, File architecture, int iterations, int areaSwapSize, boolean verbose) {
         Runnable runnableTask = () -> {
             try {
                 blockEvent.blockUI();
@@ -35,14 +37,16 @@ public class AlgorithmExecutor {
                 List<CircuitElement> nets = parser.parse(netlist);
                 ArchitectureParser archParser = new ArchitectureParser();
 
-                ZFTAlgorithm algorithm = new ZFTAlgorithm(nets, archParser.parse(architecture), iterations);
-                algorithm.run();
+                ZFTAlgorithm algorithm = new ZFTAlgorithm(nets, archParser.parse(architecture), verbose);
+                algorithm.run(iterations, areaSwapSize);
                 System.out.println("fertig");
                 PlacementWriter writer = new PlacementWriter();
                 writer.write(OUT + getSimpleName(netlist, ".place"), netlist, architecture,
                         algorithm.getPlacementsAsList(), algorithm.getXDimensionRespectively(),
                         algorithm.getYDimensionRespectively());
+                placementEvent.generating(true);
             } catch (Exception e) {
+                placementEvent.generating(false);
                 e.printStackTrace();
             } finally {
                 blockEvent.freeUI();
@@ -81,7 +85,9 @@ public class AlgorithmExecutor {
                     System.out.println(line);
                     line = reader.readLine();
                 }
+                placementEvent.generating(true);
             } catch (Exception e) {
+                placementEvent.generating(false);
                 e.printStackTrace();
             } finally {
                 currentProcess = null;

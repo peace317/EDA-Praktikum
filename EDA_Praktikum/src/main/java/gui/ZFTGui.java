@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class ZFTGui implements BlockEvent, RouteEvent {
+public class ZFTGui implements BlockEvent, RouteEvent, PlacementEvent {
 
     private static final String ASSETS = "./assets";
     private static final String IMAGES = ASSETS + "/images/";
@@ -51,13 +51,27 @@ public class ZFTGui implements BlockEvent, RouteEvent {
     private int iterations = 200;
     JSlider iterationsS = new JSlider(0, 500, iterations);
 
+    // Area swap size slider
+    private int areaSwapSize = 8;
+    JSlider areaSwapSizeS = new JSlider(0, 80, areaSwapSize);
+
+    // verbose output
+    JCheckBox verboseCB = new JCheckBox();
+
+    // random initialisation of ZFT
+    JCheckBox randomInitCB = new JCheckBox();
+
     // Console-Output
     private final JTextArea output = new JTextArea();
-    // Status tools
+
+    // Status tools for routing
     JPanel statusP = new JPanel();
     JPanel placementConsistencyCheckP;
     JPanel netDelayValueCrossCheckP;
     JPanel routingConsistencyCheckP;
+
+    // Status tools for placement
+    JPanel generatingP;
 
     // Image loading icon
     ImageIcon loadingRaw = new ImageIcon(IMAGES + "loading.gif");
@@ -65,7 +79,7 @@ public class ZFTGui implements BlockEvent, RouteEvent {
     ImageIcon checkIcon = new ImageIcon(IMAGES + "icon-check.png");
     ImageIcon noCheckIcon = new ImageIcon(IMAGES + "icon-nocheck.png");
 
-    private final AlgorithmExecutor executor = new AlgorithmExecutor(this);
+    private final AlgorithmExecutor executor = new AlgorithmExecutor(this, this);
 
     public ZFTGui() {    //CONSTRUCTOR
         initialize();
@@ -104,10 +118,12 @@ public class ZFTGui implements BlockEvent, RouteEvent {
         generatePlaceB.setBounds(TOOL_POS, space, BUTTON_WIDTH, BUTTON_HEIGHT);
         generatePlaceB.addActionListener(e -> {
             hideStates();
+            showPlacementLoading();
             switch (selectedAlgorithm) {
                 case 0 ->
                         executor.executeZFT(netlistFileMap.get(selectedNetlist),
-                                architectureFileMap.get(selectedArchitecture), iterations);
+                                architectureFileMap.get(selectedArchitecture), iterations, areaSwapSize,
+                                verboseCB.isSelected());
                 case 1 ->
                         executor.executeBoundingBox(netlistFileMap.get(selectedNetlist),
                                 architectureFileMap.get(selectedArchitecture));
@@ -125,7 +141,8 @@ public class ZFTGui implements BlockEvent, RouteEvent {
         // generate route button
         generateRouteB.setBounds(TOOL_POS, space, BUTTON_WIDTH, BUTTON_HEIGHT);
         generateRouteB.addActionListener(e -> {
-            showLoading();
+            hideStates();
+            showRouteLoading();
             executor.executeVPRRouting(netlistFileMap.get(selectedNetlist),
                     architectureFileMap.get(selectedArchitecture));
         });
@@ -177,26 +194,61 @@ public class ZFTGui implements BlockEvent, RouteEvent {
         algorithmSB.addItemListener(e -> {
             selectedAlgorithm = algorithmSB.getSelectedIndex();
             iterationsS.setEnabled(selectedAlgorithm == 0);
+            areaSwapSizeS.setEnabled(selectedAlgorithm == 0);
+            verboseCB.setEnabled(selectedAlgorithm == 0);
+            randomInitCB.setEnabled(selectedAlgorithm == 0);
         });
         selectedAlgorithm = netListSB.getSelectedIndex();
         toolP.add(algorithmSB);
 
         // iterations slider
         JLabel iterationsL = new JLabel("Iterations: ");
-        JLabel iterationAmountL = new JLabel(String.valueOf(iterations));
         iterationsL.setBounds(TOOL_POS, space, 100, BUTTON_HEIGHT);
+        toolP.add(iterationsL);
+        JLabel iterationAmountL = new JLabel(String.valueOf(iterations));
         iterationAmountL.setBounds(97, space, 40, BUTTON_HEIGHT);
         toolP.add(iterationAmountL);
         space += 25;
-        toolP.add(iterationsL);
         iterationsS.setMajorTickSpacing(1);
         iterationsS.setBounds(TOOL_POS, space, BUTTON_WIDTH, BUTTON_HEIGHT);
+        space += SPACE_BUFFER;
         iterationsS.addChangeListener(e -> {
             iterations = iterationsS.getValue();
             iterationAmountL.setText(String.valueOf(iterations));
         });
         toolP.add(iterationsS);
 
+        // iterations slider
+        JLabel areaSwapL = new JLabel("Area swap size: ");
+        areaSwapL.setBounds(TOOL_POS, space, 100, BUTTON_HEIGHT);
+        toolP.add(areaSwapL);
+        JLabel areaSwapSizeL = new JLabel(String.valueOf(areaSwapSize));
+        areaSwapSizeL.setBounds(130, space, 40, BUTTON_HEIGHT);
+        toolP.add(areaSwapSizeL);
+        space += 25;
+        areaSwapSizeS.setMajorTickSpacing(1);
+        areaSwapSizeS.setBounds(TOOL_POS, space, BUTTON_WIDTH, BUTTON_HEIGHT);
+        space += SPACE_BUFFER;
+        areaSwapSizeS.addChangeListener(e -> {
+            areaSwapSize = areaSwapSizeS.getValue();
+            areaSwapSizeL.setText(String.valueOf(areaSwapSize));
+        });
+        toolP.add(areaSwapSizeS);
+
+        // check verbose
+        JLabel verboseL = new JLabel("Verbose: ");
+        verboseL.setBounds(TOOL_POS, space, BUTTON_WIDTH, BUTTON_HEIGHT);
+        toolP.add(verboseL);
+        verboseCB.setBounds(TOOL_POS + 55, space, 20, BUTTON_HEIGHT);
+        space += SPACE_BUFFER;
+        toolP.add(verboseCB);
+
+        // check random initialisation
+        JLabel randomInitL = new JLabel("Random initialization: ");
+        randomInitL.setBounds(TOOL_POS, space, BUTTON_WIDTH, BUTTON_HEIGHT);
+        toolP.add(randomInitL);
+        randomInitCB.setBounds(TOOL_POS + 123, space, 20, BUTTON_HEIGHT);
+        toolP.add(randomInitCB);
 
         frame.getContentPane().add(toolP);
     }
@@ -218,7 +270,7 @@ public class ZFTGui implements BlockEvent, RouteEvent {
         panel.add(output);
 
         JScrollPane scrollPaneOutput = new JScrollPane(panel);
-        scrollPaneOutput.setBounds(230, 390, 945, 368);
+        scrollPaneOutput.setBounds(230, 290, 945, 468);
         scrollPaneOutput.getVerticalScrollBar().setUnitIncrement(16);
         scrollPaneOutput.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
@@ -229,7 +281,7 @@ public class ZFTGui implements BlockEvent, RouteEvent {
     private void initToolBar() {
 
         JToolBar tbar = new JToolBar();
-        tbar.setBounds(230, 360, 50, 30);
+        tbar.setBounds(230, 260, 50, 30);
         tbar.setMargin(new Insets(2, 2, 0, 2));
         tbar.setFloatable(false);
         JButton clear = new JButton("Clear");
@@ -244,21 +296,23 @@ public class ZFTGui implements BlockEvent, RouteEvent {
                 "Status"));
 
         statusP.setLayout(null);
-        statusP.setBounds(230, 10, 750, 325);
+        statusP.setBounds(230, 10, 750, 225);
         placementConsistencyCheckP = createLoadingPanel("placement consistency check:", 25, 200);
+        generatingP = createLoadingPanel("generating placement:", 25, 155);
         netDelayValueCrossCheckP = createLoadingPanel("net delay value cross check:", 65, 195);
         routingConsistencyCheckP = createLoadingPanel("routing consistency check:", 105, 185);
         statusP.add(placementConsistencyCheckP);
+        statusP.add(generatingP);
         statusP.add(netDelayValueCrossCheckP);
         statusP.add(routingConsistencyCheckP);
         frame.getContentPane().add(statusP);
     }
 
-    private JPanel createLoadingPanel(String s, int yPos, int width) {
+    private JPanel createLoadingPanel(String s, int panelYPos, int width) {
         JPanel p = new JPanel(new BorderLayout());
         p.add(new JLabel(s, JLabel.LEFT), BorderLayout.WEST);
         p.add(new JLabel(loadingGif, JLabel.RIGHT), BorderLayout.EAST);
-        p.setBounds(TOOL_POS, yPos, width, 32);
+        p.setBounds(TOOL_POS, panelYPos, width, 32);
         p.setVisible(false);
         return p;
     }
@@ -304,13 +358,18 @@ public class ZFTGui implements BlockEvent, RouteEvent {
 
     }
 
-    public void showLoading() {
+    public void showPlacementLoading() {
+        generatingP.setVisible(true);
+        showPanelLoading(generatingP);
+    }
+
+    public void showRouteLoading() {
         placementConsistencyCheckP.setVisible(true);
         netDelayValueCrossCheckP.setVisible(true);
         routingConsistencyCheckP.setVisible(true);
-        showLoading(placementConsistencyCheckP);
-        showLoading(netDelayValueCrossCheckP);
-        showLoading(routingConsistencyCheckP);
+        showPanelLoading(placementConsistencyCheckP);
+        showPanelLoading(netDelayValueCrossCheckP);
+        showPanelLoading(routingConsistencyCheckP);
     }
 
     @Override
@@ -343,15 +402,15 @@ public class ZFTGui implements BlockEvent, RouteEvent {
     private void checkState(JPanel comp, boolean successful) {
         Component[] c = comp.getComponents();
         comp.remove(c[1]);
+        JLabel label;
         if (successful) {
-            JLabel label = new JLabel(checkIcon, JLabel.RIGHT);
+            label = new JLabel(checkIcon, JLabel.RIGHT);
             label.setName("check");
-            comp.add(label, BorderLayout.EAST);
         } else {
-            JLabel label = new JLabel(noCheckIcon, JLabel.RIGHT);
+            label = new JLabel(noCheckIcon, JLabel.RIGHT);
             label.setName("noCheck");
-            comp.add(label, BorderLayout.EAST);
         }
+        comp.add(label, BorderLayout.EAST);
         comp.repaint();
         comp.revalidate();
     }
@@ -360,6 +419,7 @@ public class ZFTGui implements BlockEvent, RouteEvent {
         placementConsistencyCheckP.setVisible(false);
         netDelayValueCrossCheckP.setVisible(false);
         routingConsistencyCheckP.setVisible(false);
+        generatingP.setVisible(false);
     }
 
     private boolean getState(JPanel comp) {
@@ -367,7 +427,7 @@ public class ZFTGui implements BlockEvent, RouteEvent {
         return c[1].getName() != null && c[1].getName().equals("check");
     }
 
-    private void showLoading(JPanel comp) {
+    private void showPanelLoading(JPanel comp) {
         Component[] c = comp.getComponents();
         comp.remove(c[1]);
         comp.add(new JLabel(loadingGif, JLabel.RIGHT), BorderLayout.EAST);
@@ -376,8 +436,8 @@ public class ZFTGui implements BlockEvent, RouteEvent {
     }
 
     @Override
-    public void reset() {
-        placementConsistencyCheckP.setVisible(false);
+    public void generating(boolean successful) {
+        checkState(generatingP, successful);
     }
 }
 

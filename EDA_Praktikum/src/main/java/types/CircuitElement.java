@@ -2,9 +2,12 @@ package types;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 public class CircuitElement {
+
+    private final static Integer MAX_RECENT_POS = 3;
     private final ElementType type;
     private final String blockName;
     private final Integer blockNumber;
@@ -12,7 +15,7 @@ public class CircuitElement {
     private final String subBlockName;
     private final List<String> subblock;
 
-    private final List<Position> recentPositions;
+    private final LinkedList<Position> recentPositions;
     private Position position;
     private Integer subblockNumber;
     private int weight;
@@ -29,7 +32,7 @@ public class CircuitElement {
         this.pinList = pinList;
         this.subBlockName = subBlockName;
         this.subblock = subblock;
-        this.recentPositions = new ArrayList<>();
+        this.recentPositions = new LinkedList<>();
         this.position = null;
         this.weight = 1;
         this.subblockNumber = 0;
@@ -76,6 +79,8 @@ public class CircuitElement {
 
     public void setPosition(Position pos) {
         recentPositions.add(pos);
+        if (recentPositions.size() > MAX_RECENT_POS)
+            recentPositions.removeFirst();
         position = pos;
     }
 
