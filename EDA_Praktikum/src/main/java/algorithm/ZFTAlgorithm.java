@@ -14,14 +14,17 @@ public class ZFTAlgorithm {
 
     private final List<CircuitElement> ioElements = new ArrayList<>();
     private final List<CircuitElement> logicElements = new ArrayList<>();
+    private final List<Net> nets;
 
-    public ZFTAlgorithm(List<CircuitElement> netlist, Architecture architecture, boolean verbose) {
+    public ZFTAlgorithm(List<CircuitElement> netlist, List<Net> nets, Architecture architecture,
+                        boolean randomInitPlace, boolean verbose) {
         this.verbose = verbose;
         this.architecture = architecture;
-        initPlacement(netlist);
+        this.nets = nets;
+        initPlacement(netlist, randomInitPlace);
     }
 
-    private void initPlacement(List<CircuitElement> netlist) {
+    private void initPlacement(List<CircuitElement> netlist, boolean randomInitPlace) {
         List<CircuitElement> netlistCopy = new ArrayList<>(netlist);
         for (CircuitElement elem : netlistCopy) {
             if (elem.getType() == ElementType.CLB) {
@@ -36,8 +39,16 @@ public class ZFTAlgorithm {
         int size = Math.max(sizeIOElements, sizeLogicElements);
         placements = new CircuitElement[size][size][architecture.getIoRate()];
 
+        System.out.println("\n");
+        if (randomInitPlace) {
+            System.out.println("Randomizing placements of all blocks");
+        } else {
+            System.out.println("Trying to strip down placements by cost factors");
+        }
+        System.out.println("The circuit will be mapped into a " + (size - 2) + " x " + (size - 2) + " array of clbs" + ".\n");
+
         initPadPosition(size);
-        initLogicPosition(size);
+        initLogicPosition(size, randomInitPlace);
     }
 
     private void initPadPosition(int size) {
@@ -55,14 +66,52 @@ public class ZFTAlgorithm {
         placeRandom(ioElements, freePositions);
     }
 
-    private void initLogicPosition(int size) {
+    private void initLogicPosition(int size, boolean randomInitPlace) {
         List<Position> freePositions = new ArrayList<>();
         for (int x = 1; x < size - 1; x++) {
             for (int y = 1; y < size - 1; y++) {
                 freePositions.add(new Position(x, y));
             }
         }
-        placeRandom(logicElements, freePositions);
+        if (randomInitPlace) {
+            placeRandom(logicElements, freePositions);
+        } else {
+            placeGridBased(freePositions);
+        }
+    }
+
+    private void placeGridBased(List<Position> freePositions) {
+        logicElements.sort(Comparator.comparingInt(CircuitElement::getWeight).reversed());
+        nets.sort(Comparator.comparingDouble(Net::calcCrossings));
+        int currentX = 1;
+        int currentY = 1;
+        int gridSize = placements.length / 5;
+        int moderator = gridSize;
+        // Platziere die Netze basierend auf ihrem Gewicht
+        for (Net net : nets) {
+            // Platzierung der Elemente des Netzes
+            for (CircuitElement element : net.getConnectedPads()) {
+                // Überprüfe, ob das Element bereits platziert wurde
+                if (element.getPosition() == null) {
+                    // Platziere das Element an den aktuellen Koordinaten
+                    setPosition(element, new Position(currentX, currentY));
+                    // Aktualisiere die Koordinaten für das nächste Element
+                    currentX++;
+                    if (currentX % moderator == 0) {
+                        currentY++;
+                        currentX = moderator - gridSize + 1;
+                    }
+                    if (currentY % moderator == 0) {
+                        moderator *= 2;
+                        currentY = moderator - gridSize + 1;
+                        currentX = moderator - gridSize + 1;
+                    }
+                    if (moderator >= placements.length) {
+                        moderator = gridSize;
+                    }
+                }
+            }
+        }
     }
 
     private void placeRandom(List<CircuitElement> netlist, List<Position> freePositions) {
@@ -126,14 +175,23 @@ public class ZFTAlgorithm {
         int totalSwitches = 0;
         int timeOutCount = 5;
 
+
         // iterations for switches
         for (int iter = 0; iter < iterations; iter++) {
+            for (CircuitElement elem : logicElements) {
+                elem.calcWeight();
+            }
+            for (CircuitElement elem : ioElements) {
+                elem.calcWeight();
+            }
             // calculations take a long time and may run in a separate thread, thus checking for interrupts
             if (Thread.currentThread().isInterrupted()) throw new InterruptedException("Thread was interrupted.");
             int switches = 0;
             // loop all logical components (only one change per iteration per component)
             for (CircuitElement component : logicElements) {
                 Position idealPos = calculateZFTPos(component);
+                // skip routine, if component is already ideal
+                if (component.getPosition().equals(idealPos)) continue;
                 boolean switchedPos = false;
                 // ideal pos is free
                 if (placements[idealPos.getX()][idealPos.getY()][0] == null) {
@@ -148,11 +206,7 @@ public class ZFTAlgorithm {
                 }
                 // check costs and switch
                 if (!switchedPos && placements[idealPos.getX()][idealPos.getY()][0] != null) {
-                    double targetCost = placements[idealPos.getX()][idealPos.getY()][0].getCosts();
-                    double currentCost = component.getCosts();
-                    if (currentCost > targetCost) {
-                        switchedPos = switchLogicBlocks(component, placements[idealPos.getX()][idealPos.getY()][0]);
-                    }
+                    switchedPos = switchLogicBlocks(component, placements[idealPos.getX()][idealPos.getY()][0]);
                 }
                 if (switchedPos) {
                     switches++;
@@ -184,8 +238,7 @@ public class ZFTAlgorithm {
                 }
             }
         }
-        if (freePositions.isEmpty())
-            return null;
+        if (freePositions.isEmpty()) return null;
         freePositions.sort((m1, m2) -> {
             double d1 = m1.distance(pos);
             double d2 = m2.distance(pos);
@@ -196,21 +249,34 @@ public class ZFTAlgorithm {
     }
 
     private boolean switchLogicBlocks(CircuitElement component, CircuitElement targetComponent) {
-        if (component.getType() != ElementType.CLB || targetComponent.getType() != ElementType.CLB)
+        if (component.getType() != ElementType.CLB)
             throw new IllegalStateException("Only logic blocks can switch position!");
-        if (component.knownPosition(targetComponent.getPosition())) return false;
+        if (component.knownPosition(targetComponent.getPosition()) && targetComponent.getType() != ElementType.CLB)
+            return false;
         if (verbose)
             System.out.println(component.getBlockName() + " has switched position at " + targetComponent.getPosition());
+
+        double currentCost = component.calcCosts() + targetComponent.calcCosts();
+
         Position targetPos = targetComponent.getPosition();
         setPosition(targetComponent, component.getPosition());
         setPosition(component, targetPos);
+
+        double costAfterSwitch = component.calcCosts() + targetComponent.calcCosts();
+        // switch back
+        if (currentCost <= costAfterSwitch) {
+            setPosition(component, targetComponent.getPosition());
+            setPosition(targetComponent, targetPos);
+            return false;
+        }
         return true;
     }
 
     private boolean switchLogicBlockPosition(CircuitElement component, Position newPos) {
         if (component.getType() != ElementType.CLB)
             throw new IllegalStateException("Only logic blocks can switch position!");
-        if (component.knownPosition(newPos)) return false;
+        if (component.knownPosition(newPos) || newPos.getX() == 0 || newPos.getX() == placements.length - 1 || newPos.getY() == 0 || newPos.getY() == placements.length - 1)
+            return false;
         if (verbose) System.out.println(component.getBlockName() + " has switched position at " + newPos);
         placements[component.getX()][component.getY()][0] = null;
         setPosition(component, newPos);
@@ -219,8 +285,6 @@ public class ZFTAlgorithm {
 
     private void setPosition(CircuitElement elem, Position pos) {
         if (elem.getType() == ElementType.CLB) {
-            if (pos.getX() == 0 || pos.getX() == placements.length - 1 || pos.getY() == 0 || pos.getY() == placements.length - 1)
-                throw new IllegalStateException("Logic block can not be positioned in pad location");
             elem.setPosition(pos);
             placements[pos.getX()][pos.getY()][0] = elem;
         } else {
@@ -234,18 +298,18 @@ public class ZFTAlgorithm {
 
     private Position calculateZFTPos(CircuitElement component) {
         int forceX = 0;
-        int weight = 0;
         int forceY = 0;
+        int totalWeight = 0;
         for (Net net : component.getPinList()) {
             for (CircuitElement element : net.getConnectedPads()) {
                 if (!element.equals(component)) {
                     forceX += element.getWeight() * element.getX();
                     forceY += element.getWeight() * element.getY();
-                    weight += element.getWeight();
+                    totalWeight += element.getWeight();
                 }
             }
         }
 
-        return new Position(forceX / weight, forceY / weight);
+        return new Position(forceX / totalWeight, forceY / totalWeight);
     }
 }

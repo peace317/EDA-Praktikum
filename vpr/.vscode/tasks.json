@@ -2,13 +2,21 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "compile",
-            "type": "npm",
-            "script": "compile",
-            "problemMatcher": [
-                "$tsc-watch"
+            "label": "Run this C Programm",
+            "type": "process",
+            "command": "make",
+            "args": [
+                "-g3",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
-            "isBackground": true
+            "isBackground": true,
+            "detail": "compiler: make",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }

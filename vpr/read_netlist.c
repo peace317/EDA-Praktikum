@@ -768,7 +768,8 @@ static int add_net (char *ptr, enum e_pin_type type, int bnum, int blk_pnum,
           printf("memory corruption.\n");
           exit(1);
        } 
-    }   
+    }
+
     net[nindex].blocks[j] = bnum;
     net[nindex].blk_pin[j] = blk_pnum;
     return (nindex);

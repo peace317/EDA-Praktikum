@@ -49,7 +49,7 @@ public class ZFTGui implements BlockEvent, RouteEvent, PlacementEvent {
 
     // Iteration slider
     private int iterations = 200;
-    JSlider iterationsS = new JSlider(0, 500, iterations);
+    JSlider iterationsS = new JSlider(0, 5000, iterations);
 
     // Area swap size slider
     private int areaSwapSize = 8;
@@ -122,7 +122,7 @@ public class ZFTGui implements BlockEvent, RouteEvent, PlacementEvent {
             switch (selectedAlgorithm) {
                 case 0 ->
                         executor.executeZFT(netlistFileMap.get(selectedNetlist),
-                                architectureFileMap.get(selectedArchitecture), iterations, areaSwapSize,
+                                architectureFileMap.get(selectedArchitecture), iterations, areaSwapSize, randomInitCB.isSelected(),
                                 verboseCB.isSelected());
                 case 1 ->
                         executor.executeBoundingBox(netlistFileMap.get(selectedNetlist),

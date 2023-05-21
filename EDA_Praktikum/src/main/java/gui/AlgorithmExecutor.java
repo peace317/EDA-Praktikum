@@ -3,6 +3,7 @@ package gui;
 import algorithm.ZFTAlgorithm;
 import parser.ArchitectureParser;
 import parser.NetlistParser;
+import types.Architecture;
 import types.CircuitElement;
 import writer.PlacementWriter;
 
@@ -29,17 +30,19 @@ public class AlgorithmExecutor {
         this.placementEvent = placementEvent;
     }
 
-    public void executeZFT(File netlist, File architecture, int iterations, int areaSwapSize, boolean verbose) {
+    public void executeZFT(File netlist, File architecture, int iterations, int areaSwapSize, boolean randomInitPlace
+            , boolean verbose) {
         Runnable runnableTask = () -> {
             try {
                 blockEvent.blockUI();
-                NetlistParser parser = new NetlistParser();
-                List<CircuitElement> nets = parser.parse(netlist);
                 ArchitectureParser archParser = new ArchitectureParser();
+                NetlistParser parser = new NetlistParser();
+                Architecture arch = archParser.parse(architecture);
+                List<CircuitElement> nets = parser.parse(netlist, arch);
 
-                ZFTAlgorithm algorithm = new ZFTAlgorithm(nets, archParser.parse(architecture), verbose);
+                ZFTAlgorithm algorithm = new ZFTAlgorithm(nets, parser.getNets(), arch, randomInitPlace, verbose);
                 algorithm.run(iterations, areaSwapSize);
-                System.out.println("fertig");
+                System.out.println("fertig.\n");
                 PlacementWriter writer = new PlacementWriter();
                 writer.write(OUT + getSimpleName(netlist, ".place"), netlist, architecture,
                         algorithm.getPlacementsAsList(), algorithm.getXDimensionRespectively(),
@@ -77,7 +80,7 @@ public class AlgorithmExecutor {
             try {
                 String[] cmd = {VPR, netlist.getAbsolutePath(), architecture.getAbsolutePath(),
                         OUT + getSimpleName(netlist, ".place"), OUT + getSimpleName(netlist, ".route"), method,
-                        "-place_algorithm", algorithm};
+                        "-place_algorithm", algorithm, "-fix_pins", "random"};
                 currentProcess = Runtime.getRuntime().exec(cmd);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(currentProcess.getInputStream()));
                 String line = reader.readLine();

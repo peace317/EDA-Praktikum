@@ -10,7 +10,7 @@
 # (6) If your system does not support X11 (e.g. you're running on Windows NT)
 #     then add -DNO_GRAPHICS to the end of the "FLAGS =" line.
 
-CC = gcc 
+CC = gcc -g
 
 #SunOS lines below.
 #LIB_DIR = -L/usr/lib/X11R5

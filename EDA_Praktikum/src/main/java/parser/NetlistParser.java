@@ -1,13 +1,12 @@
 package parser;
 
-import types.CircuitElement;
-import types.ElementType;
-import types.Net;
+import types.*;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,19 +18,30 @@ public class NetlistParser {
 
     private List<String> knownBlockNames = new ArrayList<>();
 
+    private List<String> globalNet = new ArrayList<>();
+
     private Map<String, Net> knownNets = new HashMap<>();
+
+    private Architecture arch;
 
     private long currentLine = 1;
 
-    public List<CircuitElement> parse(String fileName) {
-        return parse(new File(fileName));
-    }
+    private long iCount;
 
-    public List<CircuitElement> parse(File file) {
+    private long oCount;
+
+    private long clbCount;
+
+    public List<CircuitElement> parse(File file, Architecture arch) {
         netlist = new ArrayList<>();
         knownBlockNames = new ArrayList<>();
         knownNets = new HashMap<>();
+        globalNet = new ArrayList<>();
+        this.arch = arch;
         currentLine = 1;
+        iCount = 0;
+        oCount = 0;
+        clbCount = 0;
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line = "";
             while (line != null) {
@@ -43,11 +53,20 @@ public class NetlistParser {
                 readBlock(block);
                 currentLine++;
             }
+
+            System.out.println("Successfully read net file " + file.getName());
+            System.out.println(netlist.size() + " blocks, " + knownNets.size() + " nets, " + globalNet.size() + " " +
+                    "global nets");
+            System.out.println(clbCount + " clbs, " + iCount + " inputs, " + oCount + " outputs");
             return netlist;
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public List<Net> getNets() {
+        return new ArrayList<>(knownNets.values());
     }
 
     private void readBlock(List<String> block) {
@@ -62,7 +81,7 @@ public class NetlistParser {
             case ".output" -> readOutput(blockParts);
             case ".clb" -> readCLB(blockParts);
             case ".global" -> {
-                // do nothing
+                globalNet.add(readTypeName(blockParts.get(0)));
             }
             default ->
                     throw new IllegalStateException("Unknown element type '" + blockParts.get(0)[0] + "'. (line: " + currentLine + ")");
@@ -75,6 +94,7 @@ public class NetlistParser {
 
         CircuitElement elem = new CircuitElement(ElementType.INPUT, readTypeName(blockParts.get(0)), netlist.size(),
                 readPinList(blockParts.get(1)));
+        iCount++;
         netlist.add(elem);
     }
 
@@ -84,6 +104,7 @@ public class NetlistParser {
 
         CircuitElement elem = new CircuitElement(ElementType.OUTPUT, readTypeName(blockParts.get(0)), netlist.size(),
                 readPinList(blockParts.get(1)));
+        oCount++;
         netlist.add(elem);
     }
 
@@ -94,6 +115,7 @@ public class NetlistParser {
         CircuitElement elem = new CircuitElement(ElementType.CLB, readTypeName(blockParts.get(0)), netlist.size(),
                 readPinList(blockParts.get(1)), readSubBlockName(blockParts.get(2)),
                 readSubBlockList(blockParts.get(2)));
+        clbCount++;
         netlist.add(elem);
     }
 
@@ -116,29 +138,29 @@ public class NetlistParser {
         return blockName;
     }
 
-    private List<Net> readPinList(String[] line) {
+    private NetClass readPinList(String[] line) {
         if (line.length < 2)
             throw new IllegalStateException("At least one pin must be given! (line: " + (currentLine + 1) + ")");
         if (!line[0].equalsIgnoreCase("pinlist:"))
             throw new IllegalStateException("Unknown keyword '" + line[0] + "'. Expected pinlist instead. (line: " + (currentLine + 1) + ")");
 
-        List<Net> pins = new ArrayList<>();
+        NetClass netClass = new NetClass();
         for (int i = 1; i < line.length; i++) {
             if (line[i].startsWith("#")) {
                 break;
             }
             if (!line[i].equals("open")) {
                 if (knownNets.containsKey(line[i])) {
-                    pins.add(knownNets.get(line[i]));
+                    netClass.add(knownNets.get(line[i]), arch.getIoClasses().get(i - 1));
                 } else {
                     Net net = new Net(line[i]);
-                    pins.add(net);
+                    netClass.add(net, arch.getIoClasses().get(i - 1));
                     knownNets.put(line[i], net);
                 }
             }
         }
 
-        return pins;
+        return netClass;
     }
 
     private List<String> readSubBlockList(String[] line) {

@@ -1,10 +1,14 @@
 package types;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Architecture {
 
     private Integer subblocksPerClb;
     private Integer subblockLutSize;
     private Integer ioRate;
+    private List<ClassType> ioClasses;
 
     public void setSubblocksPerClb(Integer subblocksPerClb) {
         this.subblocksPerClb = subblocksPerClb;
@@ -28,5 +32,13 @@ public class Architecture {
 
     public Integer getIoRate() {
         return ioRate;
+    }
+
+    public List<ClassType> getIoClasses() {
+        return ioClasses;
+    }
+
+    public void setIoClasses(List<ClassType> ioClasses) {
+        this.ioClasses = ioClasses;
     }
 }

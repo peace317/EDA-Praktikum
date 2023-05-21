@@ -1,17 +1,16 @@
 package types;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 public class CircuitElement {
 
-    private final static Integer MAX_RECENT_POS = 3;
+    private final static Integer MAX_RECENT_POS = 2;
     private final ElementType type;
     private final String blockName;
     private final Integer blockNumber;
-    private final List<Net> pinList;
+    private final NetClass pinList;
     private final String subBlockName;
     private final List<String> subblock;
 
@@ -20,11 +19,11 @@ public class CircuitElement {
     private Integer subblockNumber;
     private int weight;
 
-    public CircuitElement(ElementType type, String blockname, Integer blockNumber, List<Net> pinList) {
+    public CircuitElement(ElementType type, String blockname, Integer blockNumber, NetClass pinList) {
         this(type, blockname, blockNumber, pinList, null, Collections.emptyList());
     }
 
-    public CircuitElement(ElementType type, String blockname, Integer blockNumber, List<Net> pinList,
+    public CircuitElement(ElementType type, String blockname, Integer blockNumber, NetClass pinList,
                           String subBlockName, List<String> subblock) {
         this.type = type;
         this.blockName = blockname;
@@ -36,9 +35,7 @@ public class CircuitElement {
         this.position = null;
         this.weight = 1;
         this.subblockNumber = 0;
-        for (Net net : pinList) {
-            net.addPad(this);
-        }
+        pinList.addBlock(this);
     }
 
     public ElementType getType() {
@@ -53,7 +50,7 @@ public class CircuitElement {
 
     public List<Net> getPinList() {
 
-        return this.pinList;
+        return pinList.collectIONets();
     }
 
     public List<String> getSubblock() {
@@ -77,10 +74,15 @@ public class CircuitElement {
         this.weight = weight;
     }
 
+    public void calcWeight() {
+        weight = pinList.calcWeight();
+    }
+
     public void setPosition(Position pos) {
         recentPositions.add(pos);
         if (recentPositions.size() > MAX_RECENT_POS)
             recentPositions.removeFirst();
+        pinList.invalidateNetCosts();
         position = pos;
     }
 
@@ -108,11 +110,8 @@ public class CircuitElement {
         this.subblockNumber = subblockNumber;
     }
 
-    public double getCosts() {
-        double sum = 0;
-        for (Net net : pinList) {
-            sum += net.getCosts();
-        }
-        return sum;
+    public double calcCosts() {
+        return pinList.calcCosts();
     }
+
 }
