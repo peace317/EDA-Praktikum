@@ -81,34 +81,16 @@ public class ZFTAlgorithm {
     }
 
     private void placeGridBased(List<Position> freePositions) {
-        logicElements.sort(Comparator.comparingInt(CircuitElement::getWeight).reversed());
+
         nets.sort(Comparator.comparingDouble(Net::calcCrossings));
-        int currentX = 1;
-        int currentY = 1;
-        int gridSize = placements.length / 5;
-        int moderator = gridSize;
-        // Platziere die Netze basierend auf ihrem Gewicht
+
         for (Net net : nets) {
-            // Platzierung der Elemente des Netzes
+            //Platzierung der Elemente des Netzes
             for (CircuitElement element : net.getConnectedPads()) {
                 // Überprüfe, ob das Element bereits platziert wurde
                 if (element.getPosition() == null) {
-                    // Platziere das Element an den aktuellen Koordinaten
-                    setPosition(element, new Position(currentX, currentY));
-                    // Aktualisiere die Koordinaten für das nächste Element
-                    currentX++;
-                    if (currentX % moderator == 0) {
-                        currentY++;
-                        currentX = moderator - gridSize + 1;
-                    }
-                    if (currentY % moderator == 0) {
-                        moderator *= 2;
-                        currentY = moderator - gridSize + 1;
-                        currentX = moderator - gridSize + 1;
-                    }
-                    if (moderator >= placements.length) {
-                        moderator = gridSize;
-                    }
+                    setPosition(element, freePositions.get(0));
+                    freePositions.remove(0);
                 }
             }
         }
@@ -289,7 +271,7 @@ public class ZFTAlgorithm {
             placements[pos.getX()][pos.getY()][0] = elem;
         } else {
             int i = 0;
-            while (placements[pos.getX()][pos.getY()][i] != null && i < placements[pos.getX()][pos.getY()].length) i++;
+            while (placements[pos.getX()][pos.getY()][i] != null && i < placements[pos.getX()][pos.getY()].length - 1) i++;
             if (i >= placements[pos.getX()][pos.getY()].length) throw new IllegalStateException("No free Positions");
             elem.setPosition(pos);
             placements[pos.getX()][pos.getY()][i] = elem;

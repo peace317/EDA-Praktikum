@@ -1,5 +1,7 @@
 package gui;
 
+import algorithm.AlgorithmExecutor;
+
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EtchedBorder;
@@ -48,7 +50,7 @@ public class ZFTGui implements BlockEvent, RouteEvent, PlacementEvent {
     private Map<String, File> architectureFileMap;
 
     // Iteration slider
-    private int iterations = 200;
+    private int iterations = 600;
     JSlider iterationsS = new JSlider(0, 5000, iterations);
 
     // Area swap size slider
@@ -79,7 +81,7 @@ public class ZFTGui implements BlockEvent, RouteEvent, PlacementEvent {
     ImageIcon checkIcon = new ImageIcon(IMAGES + "icon-check.png");
     ImageIcon noCheckIcon = new ImageIcon(IMAGES + "icon-nocheck.png");
 
-    private final AlgorithmExecutor executor = new AlgorithmExecutor(this, this);
+    private final AlgorithmExecutor executor = new AlgorithmExecutor(1, this, this);
 
     public ZFTGui() {    //CONSTRUCTOR
         initialize();
