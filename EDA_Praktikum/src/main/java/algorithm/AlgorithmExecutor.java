@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.concurrent.*;
 
 /**
@@ -26,6 +27,9 @@ public class AlgorithmExecutor {
     private static final String ASSETS = "./assets";
     private static final String OUT = ASSETS + "/out/";
     private static final String VPR = ASSETS + "/vpr.exe";
+
+    SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.SSS");
+
 
     private final ExecutorService executorService;
 
@@ -45,6 +49,7 @@ public class AlgorithmExecutor {
         this.placementEvent = placementEvent;
         executorService = new ThreadPoolExecutor(corePoolSize, corePoolSize, 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>());
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
     }
 
     /**
@@ -76,7 +81,7 @@ public class AlgorithmExecutor {
                         algorithm.getPlacementsAsList(), algorithm.getXDimensionRespectively(),
                         algorithm.getYDimensionRespectively());
 
-                System.out.println("Placement runtime took: " + new SimpleDateFormat("hh:mm:ss.SSS").format(new Date((System.currentTimeMillis() - startTime))) + "s.");
+                System.out.println("Placement runtime took: " + sdf.format(new Date((System.currentTimeMillis() - startTime))));
                 System.out.println("Finished.\n");
                 placementEvent.generating(true);
             } catch (Exception e) {
@@ -157,7 +162,7 @@ public class AlgorithmExecutor {
                 placementEvent.generating(false);
                 e.printStackTrace();
             } finally {
-                System.out.println("VPR runtime took: " + new SimpleDateFormat("hh:mm:ss.SSS").format(new Date((System.currentTimeMillis() - startTime))) + "s.");
+                System.out.println("VPR runtime took: " + sdf.format(new Date((System.currentTimeMillis() - startTime))));
                 System.out.println("Finished.\n");
                 currentProcess = null;
                 blockEvent.freeUI();
@@ -202,7 +207,7 @@ public class AlgorithmExecutor {
     public void shutdown(boolean waitForShutdown) {
         executorService.shutdown();
         try {
-            if  (waitForShutdown && executorService.awaitTermination(30, TimeUnit.MINUTES)) {
+            if  (waitForShutdown && executorService.awaitTermination(300, TimeUnit.MINUTES)) {
                 // wait
                 executorService.shutdownNow();
             }

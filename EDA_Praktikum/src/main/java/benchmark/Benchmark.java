@@ -27,7 +27,7 @@ public class Benchmark {
         AlgorithmExecutor exec = new AlgorithmExecutor(6);
 
         for (File file : netlist.values()) {
-            exec.executeZFT(file, arch, 600, 8, false, false);
+            exec.executeZFT(file, arch, 700, 8, false, false);
         }
         exec.shutdown(true);
 
