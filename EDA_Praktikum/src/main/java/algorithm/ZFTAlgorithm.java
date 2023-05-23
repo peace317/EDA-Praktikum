@@ -157,21 +157,21 @@ public class ZFTAlgorithm {
         int totalSwitches = 0;
         int timeOutCount = 5;
 
-
+        for (CircuitElement elem : logicElements) {
+            elem.calcWeight();
+        }
+        for (CircuitElement elem : ioElements) {
+            elem.calcWeight();
+        }
         // iterations for switches
         for (int iter = 0; iter < iterations; iter++) {
-            for (CircuitElement elem : logicElements) {
-                elem.calcWeight();
-            }
-            for (CircuitElement elem : ioElements) {
-                elem.calcWeight();
-            }
             // calculations take a long time and may run in a separate thread, thus checking for interrupts
             if (Thread.currentThread().isInterrupted()) throw new InterruptedException("Thread was interrupted.");
             int switches = 0;
             // loop all logical components (only one change per iteration per component)
             for (CircuitElement component : logicElements) {
                 Position idealPos = calculateZFTPos(component);
+
                 // skip routine, if component is already ideal
                 if (component.getPosition().equals(idealPos)) continue;
                 boolean switchedPos = false;

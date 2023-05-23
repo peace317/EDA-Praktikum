@@ -1,0 +1,162 @@
+[
+  {
+    "s298.net": {
+      "minChanelWidth": "8",
+      "critPath": "1.98464e-07",
+      "costs": "203.949",
+      "vprRuntime": "45,514s"
+    }
+  },
+  {
+    "frisc.net": {
+      "minChanelWidth": "13",
+      "critPath": "1.7573e-07",
+      "costs": "515.59",
+      "vprRuntime": "39,965s"
+    }
+  },
+  {
+    "misex3.net": {
+      "minChanelWidth": "12",
+      "critPath": "1.06585e-07",
+      "costs": "190.205",
+      "vprRuntime": "23,819s"
+    }
+  },
+  {
+    "ex5p.net": {
+      "minChanelWidth": "14",
+      "critPath": "1.09554e-07",
+      "costs": "162.012",
+      "vprRuntime": "15,088s"
+    }
+  },
+  {
+    "dsip.net": {
+      "minChanelWidth": "6",
+      "critPath": "7.97245e-08",
+      "costs": "169.991",
+      "vprRuntime": "37,572s"
+    }
+  },
+  {
+    "ex1010.net": {
+      "minChanelWidth": "11",
+      "critPath": "2.43629e-07",
+      "costs": "655.429",
+      "vprRuntime": "42,699s"
+    }
+  },
+  {
+    "s38584.1.net": {
+      "minChanelWidth": "9",
+      "critPath": "1.27657e-07",
+      "costs": "657.87",
+      "vprRuntime": "08,286s"
+    }
+  },
+  {
+    "clma.net": {
+      "minChanelWidth": "13",
+      "critPath": "2.53289e-07",
+      "costs": "1387.05",
+      "vprRuntime": "43,177s"
+    }
+  },
+  {
+    "s38417.net": {
+      "minChanelWidth": "8",
+      "critPath": "1.79489e-07",
+      "costs": "671.75",
+      "vprRuntime": "22,525s"
+    }
+  },
+  {
+    "des.net": {
+      "minChanelWidth": "8",
+      "critPath": "1.16117e-07",
+      "costs": "227.843",
+      "vprRuntime": "32,465s"
+    }
+  },
+  {
+    "alu4.net": {
+      "minChanelWidth": "11",
+      "critPath": "1.08897e-07",
+      "costs": "190.135",
+      "vprRuntime": "17,964s"
+    }
+  },
+  {
+    "bigkey.net": {
+      "minChanelWidth": "6",
+      "critPath": "1.07031e-07",
+      "costs": "185.977",
+      "vprRuntime": "56,444s"
+    }
+  },
+  {
+    "pdc.net": {
+      "minChanelWidth": "18",
+      "critPath": "2.41131e-07",
+      "costs": "898.444",
+      "vprRuntime": "58,732s"
+    }
+  },
+  {
+    "spla.net": {
+      "minChanelWidth": "14",
+      "critPath": "1.65607e-07",
+      "costs": "593.969",
+      "vprRuntime": "05,875s"
+    }
+  },
+  {
+    "elliptic.net": {
+      "minChanelWidth": "11",
+      "critPath": "1.85831e-07",
+      "costs": "457.203",
+      "vprRuntime": "48,440s"
+    }
+  },
+  {
+    "tseng.net": {
+      "minChanelWidth": "7",
+      "critPath": "7.80315e-08",
+      "costs": "92.0471",
+      "vprRuntime": "03,609s"
+    }
+  },
+  {
+    "seq.net": {
+      "minChanelWidth": "12",
+      "critPath": "1.29149e-07",
+      "costs": "247.658",
+      "vprRuntime": "41,866s"
+    }
+  },
+  {
+    "apex2.net": {
+      "minChanelWidth": "12",
+      "critPath": "1.30581e-07",
+      "costs": "269.765",
+      "vprRuntime": "52,561s"
+    }
+  },
+  {
+    "diffeq.net": {
+      "minChanelWidth": "8",
+      "critPath": "8.44955e-08",
+      "costs": "146.394",
+      "vprRuntime": "16,683s"
+    }
+  },
+  {
+    "apex4.net": {
+      "minChanelWidth": "13",
+      "critPath": "1.12463e-07",
+      "costs": "179.329",
+      "vprRuntime": "15,683s"
+    }
+  }
+]

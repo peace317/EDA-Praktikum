@@ -27,8 +27,8 @@ public class NetClass {
 
     public int calcWeight() {
         int weight = 1;
-        for (Net net : collectAllNets()) {
-            weight += net.getConnectedPads().size() - 1;
+        for (Net net : collectIONets()) {
+            weight += net.calcCrossings();
         }
         return weight;
     }

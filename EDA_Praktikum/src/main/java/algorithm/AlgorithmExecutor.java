@@ -1,6 +1,5 @@
 package algorithm;
 
-import algorithm.ZFTAlgorithm;
 import gui.BlockEvent;
 import gui.EmptyGUIEvent;
 import gui.PlacementEvent;
@@ -77,7 +76,7 @@ public class AlgorithmExecutor {
                         algorithm.getPlacementsAsList(), algorithm.getXDimensionRespectively(),
                         algorithm.getYDimensionRespectively());
 
-                System.out.println("Placement runtime took: " + new SimpleDateFormat("ss,SSS").format(new Date((System.currentTimeMillis() - startTime))) + "s.");
+                System.out.println("Placement runtime took: " + new SimpleDateFormat("hh:mm:ss.SSS").format(new Date((System.currentTimeMillis() - startTime))) + "s.");
                 System.out.println("Finished.\n");
                 placementEvent.generating(true);
             } catch (Exception e) {
@@ -97,7 +96,7 @@ public class AlgorithmExecutor {
      * @param architecture architecture
      */
     public void executeBoundingBox(File netlist, File architecture) {
-        executeVPRAlgorithm(netlist, architecture, "-place_only", "bounding_box");
+        executeVPRAlgorithm(netlist, null, architecture, "-place_only", "bounding_box");
     }
 
     /**
@@ -105,7 +104,7 @@ public class AlgorithmExecutor {
      * @param architecture architecture
      */
     public void executeNetTiming(File netlist, File architecture) {
-        executeVPRAlgorithm(netlist, architecture, "-place_only", "net_timing_driven");
+        executeVPRAlgorithm(netlist, null, architecture, "-place_only", "net_timing_driven");
     }
 
     /**
@@ -113,7 +112,7 @@ public class AlgorithmExecutor {
      * @param architecture architecture
      */
     public void executePathTiming(File netlist, File architecture) {
-        executeVPRAlgorithm(netlist, architecture, "-place_only", "path_timing_driven");
+        executeVPRAlgorithm(netlist, null, architecture, "-place_only", "path_timing_driven");
     }
 
     /**
@@ -121,21 +120,30 @@ public class AlgorithmExecutor {
      * @param architecture architecture
      */
     public void executeVPRRouting(File netlist, File architecture) {
-        executeVPRAlgorithm(netlist, architecture, "-route_only", "path_timing_driven");
+        executeVPRAlgorithm(netlist, null, architecture, "-route_only", "path_timing_driven");
     }
+
+    public void executeVPRRouting(File netlist, File place, File architecture) {
+        executeVPRAlgorithm(netlist, place, architecture, "-route_only", "path_timing_driven");
+    }
+
 
     /**
      * @param netlist      netlist
+     * @param place        place
      * @param architecture architecture
      */
-    private void executeVPRAlgorithm(File netlist, File architecture, String method, String algorithm) {
+    private void executeVPRAlgorithm(File netlist, File place, File architecture, String method, String algorithm) {
         Runnable runnableTask = () -> {
             Thread.currentThread().setName(netlist.getName());
             blockEvent.blockUI();
             final long startTime = System.currentTimeMillis();
             try {
+                String placeFile = OUT + getSimpleName(netlist, ".place");
+                if (place != null)
+                    placeFile = place.getAbsolutePath() ;
                 String[] cmd = {VPR, netlist.getAbsolutePath(), architecture.getAbsolutePath(),
-                        OUT + getSimpleName(netlist, ".place"), OUT + getSimpleName(netlist, ".route"), method,
+                        placeFile, OUT + getSimpleName(netlist, ".route"), method,
                         "-place_algorithm", algorithm, "-fix_pins", "random"};
                 currentProcess = Runtime.getRuntime().exec(cmd);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(currentProcess.getInputStream()));
@@ -149,7 +157,7 @@ public class AlgorithmExecutor {
                 placementEvent.generating(false);
                 e.printStackTrace();
             } finally {
-                System.out.println("VPR runtime took: " + new SimpleDateFormat("ss,SSS").format(new Date((System.currentTimeMillis() - startTime))) + "s.");
+                System.out.println("VPR runtime took: " + new SimpleDateFormat("hh:mm:ss.SSS").format(new Date((System.currentTimeMillis() - startTime))) + "s.");
                 System.out.println("Finished.\n");
                 currentProcess = null;
                 blockEvent.freeUI();
@@ -187,20 +195,20 @@ public class AlgorithmExecutor {
 
     /**
      * Shuts down the executor, no tasks will be accepted after that. Can be used to await termination of multiple
-     * tasks.
+     * tasks. Maximum wait time is 30 minutes
      *
      * @param waitForShutdown wait for termination/shutdown of all running tasks
      */
     public void shutdown(boolean waitForShutdown) {
         executorService.shutdown();
         try {
-            while (waitForShutdown && !executorService.awaitTermination(100, TimeUnit.MILLISECONDS)) {
+            if  (waitForShutdown && executorService.awaitTermination(30, TimeUnit.MINUTES)) {
                 // wait
+                executorService.shutdownNow();
             }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     private String getSimpleName(File file, String ending) {

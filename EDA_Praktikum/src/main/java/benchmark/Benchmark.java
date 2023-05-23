@@ -24,16 +24,16 @@ public class Benchmark {
         File arch = new File(ARCH);
         StatRecorder recorder = new StatRecorder();
         System.setOut(new PrintStream(recorder));
+        AlgorithmExecutor exec = new AlgorithmExecutor(6);
 
-        AlgorithmExecutor exec = new AlgorithmExecutor(4);
         for (File file : netlist.values()) {
-            exec.executeZFT(file, arch, 600, 6, false, false);
+            exec.executeZFT(file, arch, 600, 8, false, false);
         }
         exec.shutdown(true);
 
-        exec = new AlgorithmExecutor(4);
-        for (File file : netlist.values()) {
-            exec.executeVPRRouting(file, arch);
+        exec = new AlgorithmExecutor(6);
+        for (Map.Entry<String, File> entry : netlist.entrySet()) {
+            exec.executeVPRRouting(entry.getValue(), arch);
         }
         exec.shutdown(true);
 

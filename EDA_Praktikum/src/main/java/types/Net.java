@@ -16,6 +16,14 @@ public class Net {
 
     private boolean calculatedCostsValid = false;
 
+    /* By VPR: Expected crossing counts for nets with different #'s of pins.  From *
+     * ICCAD 94 pp. 690 - 695 (with linear interpolation applied by me).   */
+    private final double[] crossCount = new double[]{   /* [0..49] */
+            1.0, 1.0, 1.0, 1.0828, 1.1536, 1.2206, 1.2823, 1.3385, 1.3991, 1.4493, 1.4974, 1.5455, 1.5937, 1.6418,
+            1.6899, 1.7304, 1.7709, 1.8114, 1.8519, 1.8924, 1.9288, 1.9652, 2.0015, 2.0379, 2.0743, 2.1061, 2.1379,
+            2.1698, 2.2016, 2.2334, 2.2646, 2.2958, 2.3271, 2.3583, 2.3895, 2.4187, 2.4479, 2.4772, 2.5064, 2.5356,
+            2.5610, 2.5864, 2.6117, 2.6371, 2.6625, 2.6887, 2.7148, 2.7410, 2.7671, 2.7933};
+
     public Net(String name) {
         this.name = name;
         connectedPads = new ArrayList<>();
@@ -39,11 +47,15 @@ public class Net {
         if (connectedPads.size() > 50) {
             crossings = 2.7933 + 0.02616 * (connectedPads.size() - 50);
         } else {
-            crossings = connectedPads.size() - 1;
+            crossings = crossCount[connectedPads.size() - 1];
         }
         return crossings;
     }
 
+    /**
+     * Calculates the bb-costs of the net
+     * @return
+     */
     public double calcCosts() {
         if (calculatedCostsValid) return lastCalculatedCosts;
 
@@ -59,6 +71,11 @@ public class Net {
         return costs;
     }
 
+    /**
+     * Determines the bounding box of the net.
+     *
+     * @return Pair of two Positions, Left minimal, right max
+     */
     private Pair<Position, Position> getBoundingBox() {
         int xMin = Integer.MAX_VALUE;
         int yMin = Integer.MAX_VALUE;
