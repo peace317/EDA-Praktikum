@@ -298,7 +298,7 @@ public class ZFTGui implements BlockEvent, RouteEvent, PlacementEvent {
                 "Status"));
 
         statusP.setLayout(null);
-        statusP.setBounds(230, 10, 750, 225);
+        statusP.setBounds(230, 10, 275, 225);
         placementConsistencyCheckP = createLoadingPanel("placement consistency check:", 25, 200);
         generatingP = createLoadingPanel("generating placement:", 25, 155);
         netDelayValueCrossCheckP = createLoadingPanel("net delay value cross check:", 65, 195);
