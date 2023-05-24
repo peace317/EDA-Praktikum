@@ -105,6 +105,8 @@ public class AlgorithmExecutor {
     }
 
     /**
+     * Executes the appropriate place algorithm by vpr.
+     *
      * @param netlist      netlist
      * @param architecture architecture
      */
@@ -113,6 +115,8 @@ public class AlgorithmExecutor {
     }
 
     /**
+     * Executes the appropriate place algorithm by vpr.
+     *
      * @param netlist      netlist
      * @param architecture architecture
      */
@@ -121,6 +125,8 @@ public class AlgorithmExecutor {
     }
 
     /**
+     * Executes the routing algorithm by vpr.
+     *
      * @param netlist      netlist
      * @param architecture architecture
      */
@@ -132,12 +138,6 @@ public class AlgorithmExecutor {
         executeVPRAlgorithm(netlist, place, architecture, "-route_only", "path_timing_driven");
     }
 
-
-    /**
-     * @param netlist      netlist
-     * @param place        place
-     * @param architecture architecture
-     */
     private void executeVPRAlgorithm(File netlist, File place, File architecture, String method, String algorithm) {
         Runnable runnableTask = () -> {
             Thread.currentThread().setName(netlist.getName());

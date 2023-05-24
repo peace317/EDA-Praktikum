@@ -41,6 +41,11 @@ public class Net {
         calculatedCostsValid = false;
     }
 
+    /**
+     * Calculates the crossings for the net. The cross count is an interpolated value by vpr.
+     *
+     * @return cross count
+     */
     public Double calcCrossings() {
         double crossings = 0;
 
@@ -53,8 +58,9 @@ public class Net {
     }
 
     /**
-     * Calculates the bb-costs of the net
-     * @return
+     * Calculates the bb-costs of the net.
+     *
+     * @return costs
      */
     public double calcCosts() {
         if (calculatedCostsValid) return lastCalculatedCosts;
